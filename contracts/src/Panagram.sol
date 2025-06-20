@@ -37,6 +37,10 @@ contract Panagram is ERC1155, Ownable {
         ERC1155("ipfs://bafybeicqfc4ipkle34tgqv3gh7gccwhmr22qdg7p6k6oxon255mnwb6csi/{id}.json")
         Ownable(msg.sender)
     {
+        if (address(_verifier) == address(0)) {
+            revert Panagram__InvalidVerifierAddress();
+        }
+        
         s_verifier = _verifier;
         s_roundStartTime = 0;
         s_currentRound = 0;
