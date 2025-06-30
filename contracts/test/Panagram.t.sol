@@ -313,6 +313,23 @@ contract PanagramTest is Test {
         assertTrue(result);
     }
 
+    function test_MakeCorrectGuess() public {
+        bytes32 guessHash = keccak256("Shourya");
+        bytes32 answerHash = keccak256("Shourya");
+
+        vm.prank(player1);
+        bytes memory proof = _getProof(guessHash, answerHash);
+
+        panagram.makeGuess(proof);
+
+        vm.assertEq(panagram.balanceOf(player1, 0), 1, "Winner NFT not minted"); 
+        vm.assertEq(panagram.balanceOf(player1, 1), 0, "Runner-up NFT wrongly minted for winner");
+
+        vm.expectRevert();
+        vm.prank(player1);
+        panagram.makeGuess(proof);
+    }
+
     ///////////////////////////////////////////////
     /////// HELPER FUNCTIONS FOR TESTING //////////
     ///////////////////////////////////////////////
@@ -321,5 +338,18 @@ contract PanagramTest is Test {
         panagram.newRound(ANSWER);
         vm.prank(player1);
         panagram.makeGuess("validProof");
+    }
+
+    function _getProof(bytes32 guess, bytes32 correctAnswer) internal returns (bytes memory _proof) {
+        uint256 NUM_ARGS = 5;
+        string[] memory inputs = new string[](NUM_ARGS);
+        inputs[0] = "npx";
+        inputs[1] = "tsx";
+        inputs[2] = "scripts/generateProof.ts";
+        inputs[3] = vm.toString(guess);
+        inputs[4] = vm.toString(correctAnswer);
+
+        bytes memory result = vm.ffi(inputs);
+        _proof = result;
     }
 }
